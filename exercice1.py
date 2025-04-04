@@ -113,9 +113,106 @@ def categoriser_age(age):
         return 'Senior'
 df = df.pipe(lambda d: d.assign(Catégorie_Age=d['Âge'].apply(categoriser_age)))
 
-# 32-43. Visualisations
-sns.barplot(x=df.groupby('Département')['Âge'].mean().index, y=df.groupby('Département')['Âge'].mean().values)
+# 32. Barplot de l’âge moyen par département
+plt.figure(figsize=(10, 5))
+sns.barplot(
+    x=df.groupby('Département')['Âge'].mean().index, 
+    y=df.groupby('Département')['Âge'].mean().values
+)
+plt.xticks(rotation=90)
+plt.title("Âge moyen par département")
+plt.show()
+
+# 33. Sauvegarder le DataFrame nettoyé
+df.to_excel('employes_nettoyé.xlsx', index=False)
+
+# 34. Histogramme de la répartition des âges
+plt.figure(figsize=(10, 5))
+sns.histplot(df['Âge'], bins=20, kde=True)
+plt.title("Répartition des âges")
+plt.xlabel("Âge")
+plt.ylabel("Nombre d'employés")
+plt.show()
+
+# 35. Nombre d’employés par département
+plt.figure(figsize=(10, 5))
+df['Département'].value_counts().plot(kind='bar', color='teal')
+plt.title("Nombre d'employés par département")
+plt.xlabel("Département")
+plt.ylabel("Nombre d'employés")
 plt.xticks(rotation=90)
 plt.show()
 
-df.to_excel('employes_nettoye.xlsx', index=False)
+# 36. Répartition hommes/femmes en camembert
+plt.figure(figsize=(6, 6))
+df['Sexe'].value_counts().plot.pie(autopct='%1.1f%%', startangle=90, colors=['lightblue', 'lightcoral'])
+plt.title("Répartition des employés par sexe")
+plt.ylabel("")
+plt.show()
+
+# 37. Boxplot des salaires par département
+plt.figure(figsize=(12, 6))
+sns.boxplot(x='Département', y='Salaire', data=df)
+plt.xticks(rotation=90)
+plt.title("Distribution des salaires par département")
+plt.show()
+
+# 38. Heatmap de corrélation entre colonnes numériques
+plt.figure(figsize=(10, 6))
+sns.heatmap(df[['Âge', 'Salaire', 'Performance (Note)', 'Télétravail (%)', 'Ancienneté (années)']].corr(), 
+            annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Matrice de corrélation")
+plt.show()
+
+# 39. Courbe de l’évolution des embauches par année
+plt.figure(figsize=(10, 5))
+df['Date d’embauche'] = pd.to_datetime(df['Date d’embauche'])
+df['Année embauche'] = df['Date d’embauche'].dt.year
+df['Année embauche'].value_counts().sort_index().plot(kind='line', marker='o', color='purple')
+plt.title("Évolution des embauches par année")
+plt.xlabel("Année")
+plt.ylabel("Nombre d'embauches")
+plt.show()
+
+# 40. Graphique combiné (barres + ligne) : Salaire moyen et performance moyenne par département
+fig, ax1 = plt.subplots(figsize=(12, 6))
+
+# Barres pour le salaire moyen
+sns.barplot(x=df.groupby('Département')['Salaire'].mean().index, 
+            y=df.groupby('Département')['Salaire'].mean().values, 
+            color='blue', alpha=0.6, ax=ax1)
+
+# Axe secondaire pour la performance moyenne
+ax2 = ax1.twinx()
+sns.lineplot(x=df.groupby('Département')['Performance (Note)'].mean().index, 
+             y=df.groupby('Département')['Performance (Note)'].mean().values, 
+             marker='o', color='red', ax=ax2)
+
+ax1.set_xlabel("Département")
+ax1.set_ylabel("Salaire moyen", color='blue')
+ax2.set_ylabel("Performance moyenne", color='red')
+plt.xticks(rotation=90)
+plt.title("Salaire moyen et performance moyenne par département")
+plt.show()
+
+# 41. Distribution des salaires avec un KDE plot
+plt.figure(figsize=(10, 5))
+sns.kdeplot(df['Salaire'], fill=True, color='green')
+plt.title("Distribution des salaires")
+plt.xlabel("Salaire")
+plt.show()
+
+# 42. Carte thermique du nombre d’employés par pays et par sexe
+plt.figure(figsize=(12, 6))
+heatmap_data = df.pivot_table(index='Pays', columns='Sexe', aggfunc='size', fill_value=0)
+sns.heatmap(heatmap_data, annot=True, cmap='coolwarm', fmt='d')
+plt.title("Nombre d’employés par pays et sexe")
+plt.show()
+
+# 43. Scatter plot entre âge et salaire, colorié par performance
+plt.figure(figsize=(10, 5))
+sns.scatterplot(x=df['Âge'], y=df['Salaire'], hue=df['Performance (Note)'], palette='coolwarm', alpha=0.7)
+plt.title("Relation entre âge et salaire selon la performance")
+plt.xlabel("Âge")
+plt.ylabel("Salaire")
+plt.show()
